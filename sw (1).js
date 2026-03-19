@@ -1,10 +1,9 @@
-const CACHE_NAME = 'smartstudy-v2';
-const BASE = '/SmartStudy';
+const CACHE_NAME = 'smartstudy-v3';
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.add(BASE + '/index.html');
+      return cache.add('/index.html');
     }).catch(function(err){ console.log('Cache install error', err); })
   );
   self.skipWaiting();
@@ -41,17 +40,17 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Navigation requests (app launch, refresh) - always serve index.html
+  // Navigation requests - always serve index.html
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      caches.match(BASE + '/index.html').then(function(cached) {
-        return cached || fetch(BASE + '/index.html');
+      caches.match('/index.html').then(function(cached) {
+        return cached || fetch('/index.html');
       })
     );
     return;
   }
 
-  // Cache-first for static assets
+  // Cache-first for everything else
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
@@ -64,7 +63,7 @@ self.addEventListener('fetch', function(e) {
         }
         return response;
       }).catch(function(){
-        return caches.match(BASE + '/index.html');
+        return caches.match('/index.html');
       });
     })
   );
