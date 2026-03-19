@@ -1,0 +1,21 @@
+{
+  "name": "SmartStudy",
+  "short_name": "SmartStudy",
+  "description": "Plan Smart. Study Balanced. Energy-based study planner for students.",
+  "start_url": "/SmartStudy/",
+  "scope": "/SmartStudy/",
+  "display": "standalone",
+  "background_color": "#f5f2ed",
+  "theme_color": "#8fafc7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/SmartStudy/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false
+}
