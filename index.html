@@ -475,6 +475,59 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 <!-- SYNC BAR -->
 <div class="sync" id="syncBar"><div class="sync-dot"></div><span class="sync-msg"></span></div>
 
+
+<!-- GRADE PICKER SCREEN -->
+<div id="gradePicker" style="display:none;min-height:100vh;min-height:100dvh;background:linear-gradient(135deg,#e8eff7 0%,#e8f2ec 50%,#f0e8db 100%);align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:520px">
+    <div class="alogo" style="margin-bottom:28px"><div class="alogo-icon">&#x2736;</div><h1>SmartStudy</h1><p>Plan Smart. Study Balanced.</p></div>
+    <div class="acard">
+      <h2>Set up your study profile</h2>
+      <p class="sub">We'll load all your subjects and topics automatically</p>
+
+      <!-- Step indicator -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px">
+        <div id="step1dot" style="width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">1</div>
+        <div style="flex:1;height:2px;background:var(--bdr)"><div id="step1bar" style="height:100%;width:0%;background:var(--blue);transition:width .4s"></div></div>
+        <div id="step2dot" style="width:28px;height:28px;border-radius:50%;background:var(--bdr);color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">2</div>
+        <div style="flex:1;height:2px;background:var(--bdr)"><div id="step2bar" style="height:100%;width:0%;background:var(--blue);transition:width .4s"></div></div>
+        <div id="step3dot" style="width:28px;height:28px;border-radius:50%;background:var(--bdr);color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">3</div>
+      </div>
+
+      <!-- Step 1: Grade -->
+      <div id="gpStep1">
+        <div style="font-size:.82rem;font-weight:600;color:var(--txt);margin-bottom:12px">Which grade are you in?</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="gradeGrid">
+          <!-- filled by JS -->
+        </div>
+        <button class="abtn" style="margin-top:18px" id="gpNext1" disabled>Next &rarr;</button>
+      </div>
+
+      <!-- Step 2: Curriculum -->
+      <div id="gpStep2" style="display:none">
+        <div style="font-size:.82rem;font-weight:600;color:var(--txt);margin-bottom:12px">Which curriculum do you follow?</div>
+        <div style="display:flex;flex-direction:column;gap:9px" id="currGrid">
+          <!-- filled by JS -->
+        </div>
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button class="abtn" style="background:var(--c2);color:var(--mut);flex:0 0 auto;width:auto;padding:12px 18px" id="gpBack1">&larr;</button>
+          <button class="abtn" style="flex:1" id="gpNext2" disabled>Next &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Subjects preview -->
+      <div id="gpStep3" style="display:none">
+        <div style="font-size:.82rem;font-weight:600;color:var(--txt);margin-bottom:4px">Your subjects are ready!</div>
+        <div style="font-size:.75rem;color:var(--mut);margin-bottom:14px">These will be pre-loaded into your dashboard. You can add more later.</div>
+        <div id="subjectPreview" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto"></div>
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button class="abtn" style="background:var(--c2);color:var(--mut);flex:0 0 auto;width:auto;padding:12px 18px" id="gpBack2">&larr;</button>
+          <button class="abtn" style="flex:1" id="gpFinish">Start Studying! &#x2736;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <header>
@@ -709,9 +762,1131 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
   </div>
 </div>
 
+
 <script>
 (function(){
 "use strict";
+
+
+var LIBRARY = {
+
+  // ═══════════════════════════════════════════
+  // GRADE 6
+  // ═══════════════════════════════════════════
+  6: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Knowing Our Numbers','Whole Numbers','Playing with Numbers','Basic Geometrical Ideas','Understanding Elementary Shapes'],
+          medium: ['Integers','Fractions','Decimals','Data Handling','Mensuration'],
+          hard:   ['Algebra - Introduction','Ratio and Proportion','Symmetry','Practical Geometry']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Food - Where Does It Come From','Components of Food','Fibre to Fabric','Sorting Materials','Separation of Substances'],
+          medium: ['Changes Around Us','Getting to Know Plants','Body Movements','The Living Organisms','Motion and Measurement'],
+          hard:   ['Light Shadows and Reflections','Electricity and Circuits','Fun with Magnets','Water','Air Around Us']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['The Earth in the Solar System','Globe Latitudes and Longitudes','Motions of the Earth','Maps','Major Domains of the Earth'],
+          medium: ['Major Landforms','Our Country India','India Climate Vegetation Wildlife','What Where How Ancient','On the Trail of Earliest People'],
+          hard:   ['From Gathering to Growing Food','In the Earliest Cities','What Books and Burials Tell Us','Kingdoms Kings and Early Republic','New Questions and Ideas']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Introduction to Computers','Parts of a Computer','Input and Output Devices','Storage Devices','Using a Keyboard and Mouse'],
+          medium: ['Windows Operating System','MS Word Basics','MS Excel Basics','Internet Basics','Email and Communication'],
+          hard:   ['Introduction to Programming','Scratch Programming','Problem Solving','Algorithms and Flowcharts','Data and Information']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Number Sense and Place Value','Addition and Subtraction','Multiplication Basics','Division Basics','Fractions Introduction'],
+          medium: ['Ratios and Proportions','Percentages','Basic Algebra','Geometry - Angles and Shapes','Perimeter and Area'],
+          hard:   ['Integers and Number Lines','Data and Statistics','Probability Introduction','3D Shapes and Volume','Problem Solving Strategies']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['States of Matter','Properties of Materials','Living vs Non-Living','Plant Parts and Functions','Animal Classification'],
+          medium: ['Ecosystems and Food Chains','Human Body Systems','Forces and Motion','Light and Sound','Earth and Space'],
+          hard:   ['Chemical and Physical Changes','Energy Forms and Transfer','Weather and Climate','Cells - Building Blocks of Life','Scientific Method and Inquiry']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Maps and Globes','Our Community','World Regions Overview','Cultural Diversity','Basic Economics'],
+          medium: ['Ancient Civilisations','Geography of Asia','Human Rights Introduction','Government Systems','Trade and Resources'],
+          hard:   ['Historical Thinking Skills','Environmental Issues','Global Connections','Migration and Identity','Conflict and Resolution']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Digital Citizenship','Hardware and Software','File Management','Word Processing','Presentation Skills'],
+          medium: ['Spreadsheet Basics','Internet Safety','Introduction to Coding','Scratch Projects','Multimedia Creation'],
+          hard:   ['Algorithms and Loops','Debugging','Data Representation','Problem Decomposition','Creating a Simple App']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Place Value and Number Systems','Addition and Subtraction Review','Multiplication Tables','Division Concepts','Introduction to Fractions'],
+          medium: ['Decimals and Percentages','Basic Ratios','Introduction to Algebra','Angles and Polygons','Area and Perimeter'],
+          hard:   ['Negative Numbers','Order of Operations (BODMAS)','Basic Statistics','Probability','Word Problems and Applications']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['What is Science','Living Things','Plants and Photosynthesis','Animals and Adaptation','Human Body Overview'],
+          medium: ['Matter and Materials','Forces and Energy','Water Cycle','Ecosystems','Simple Machines'],
+          hard:   ['Chemical Changes','Electricity Basics','Earth Structure','Space and Solar System','Scientific Investigations']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Reading Maps and Atlases','World Continents and Oceans','Local Community and Government','Famous Landmarks','Cultures Around the World'],
+          medium: ['Ancient History Overview','World Geography','Democratic Institutions','Economic Systems Basics','Population and Migration'],
+          hard:   ['Cause and Effect in History','Environmental Geography','Human Rights','Global Issues','Research and Presentation Skills']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Computer Basics','Using the Internet Safely','Typing and Keyboard Skills','Creating Documents','Organising Files'],
+          medium: ['Spreadsheets and Formulas','Creating Presentations','Introduction to Coding','Digital Art and Media','Email Communication'],
+          hard:   ['Programming with Scratch','Algorithms','Binary Numbers','Cybersecurity Basics','Building a Simple Website']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 7
+  // ═══════════════════════════════════════════
+  7: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Integers Review','Fractions and Decimals','Data Handling','Simple Equations','Lines and Angles'],
+          medium: ['The Triangle and Its Properties','Congruence of Triangles','Comparing Quantities','Rational Numbers','Perimeter and Area'],
+          hard:   ['Algebraic Expressions','Exponents and Powers','Symmetry','Visualising Solid Shapes','Practical Geometry']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Nutrition in Plants','Nutrition in Animals','Fibre to Fabric','Heat','Acids Bases and Salts'],
+          medium: ['Physical and Chemical Changes','Weather Climate and Adaptations','Winds Storms and Cyclones','Soil','Respiration in Organisms'],
+          hard:   ['Transportation in Animals and Plants','Reproduction in Plants','Motion and Time','Electric Current and Its Effects','Light']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Environment','Inside Our Earth','Our Changing Earth','Air','Water'],
+          medium: ['Natural Vegetation and Wildlife','Human Environment - Settlement Transport','Human Environment Interactions','Tracing Changes Through a 1000 Years','New Kings and Kingdoms'],
+          hard:   ['The Delhi Sultans','The Mughal Empire','Rulers and Buildings','Towns Traders and Craftspersons','Tribes Nomads and Settled Communities']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Review of Computer Basics','Advanced MS Word','Tables and Graphics','MS Excel Formulas','Charts and Graphs'],
+          medium: ['Database Concepts','MS PowerPoint Advanced','Internet Research Skills','HTML Basics','Introduction to Python'],
+          hard:   ['Python Variables and Data Types','Conditional Statements','Loops in Python','Functions Basics','Simple Python Projects']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Rational Numbers','Order of Operations','Variables and Expressions','Geometric Shapes','Surface Area'],
+          medium: ['Linear Equations','Inequalities','Statistics and Graphs','Transformations','Probability'],
+          hard:   ['Systems of Equations Introduction','Functions Introduction','Pythagorean Theorem','Circle Geometry','Real World Applications']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Cell Theory','Photosynthesis','Respiration','Digestive System','Circulatory System'],
+          medium: ['Genetics Introduction','Evolution Basics','Periodic Table Introduction','Chemical Reactions','Forces and Newton Laws'],
+          hard:   ['Atomic Structure','Energy and Work','Wave Properties','Climate Science','Experimental Design']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Physical Geography Review','Population Distribution','Cultural Landscape','Ancient Civilisations Review','Colonialism Introduction'],
+          medium: ['Industrial Revolution','Imperialism and Colonialism','World War I Causes','Economic Geography','Urbanisation'],
+          hard:   ['Source Analysis Skills','Historical Perspectives','Globalisation','Sustainability','Contemporary Global Issues']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Python Introduction','Variables and Data Types','Input and Output','String Operations','Basic Arithmetic in Python'],
+          medium: ['Conditionals and Boolean Logic','For and While Loops','Lists and Tuples','Functions','File Handling Basics'],
+          hard:   ['Object Oriented Concepts','Sorting Algorithms','Searching Algorithms','Recursion Introduction','Mini Project Development']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Integers and Absolute Value','Fractions Operations','Decimal Operations','Introduction to Ratios','Basic Geometry Review'],
+          medium: ['Proportions and Percentages','One-Step Equations','Two-Step Equations','Area of Polygons','Introduction to Statistics'],
+          hard:   ['Inequalities','Coordinate Plane','Scale Drawings','Probability','Composite Figures']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Cell Structure and Function','Photosynthesis and Respiration','Classification of Living Things','Food Webs','Human Body Systems'],
+          medium: ['Genetics and Heredity','Atoms and Molecules','Physical vs Chemical Changes','Forces and Motion','Energy Types'],
+          hard:   ['Periodic Table','Chemical Bonding Intro','Newton Laws','Plate Tectonics','Experimental Methods']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['World Geography Review','Map Skills Advanced','Ancient Civilisations','Government Types','Economic Basics'],
+          medium: ['Medieval History','Renaissance and Reformation','Age of Exploration','Industrial Revolution','World Wars Overview'],
+          hard:   ['Primary vs Secondary Sources','Historical Analysis','Political Systems','Global Economy','Contemporary Issues']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Python Basics','Variables and Expressions','Input/Output','String Methods','Number Operations'],
+          medium: ['If-Else Statements','Loops','Lists','Functions','Debugging Skills'],
+          hard:   ['Nested Loops','Dictionaries','File I/O','Modules','Simple Project']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 8
+  // ═══════════════════════════════════════════
+  8: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Rational Numbers','Linear Equations in One Variable','Understanding Quadrilaterals','Practical Geometry','Data Handling'],
+          medium: ['Squares and Square Roots','Cubes and Cube Roots','Comparing Quantities','Algebraic Expressions and Identities','Visualising Solid Shapes'],
+          hard:   ['Mensuration','Exponents and Powers','Direct and Inverse Proportions','Factorisation','Introduction to Graphs']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Crop Production and Management','Microorganisms','Synthetic Fibres and Plastics','Materials Metals and Non-Metals','Coal and Petroleum'],
+          medium: ['Combustion and Flame','Conservation of Plants and Animals','Cell Structure and Functions','Reproduction in Animals','Reaching the Age of Adolescence'],
+          hard:   ['Force and Pressure','Friction','Sound','Chemical Effects of Electric Current','Some Natural Phenomena','Light']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Resources','Land Soil Water Natural Vegetation','Mineral and Power Resources','Agriculture','Industries'],
+          medium: ['Human Resources','How When and Where - History','From Trade to Territory','Ruling the Countryside','Tribals Dikus and the Vision of Golden Age'],
+          hard:   ['When People Rebel','Colonialism and the City','Crafts and Industries','The Making of the National Movement','India After Independence']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Python Review','Strings and String Formatting','Lists Operations','Tuples and Sets','Dictionary Basics'],
+          medium: ['Object Oriented Programming Intro','Classes and Objects','Inheritance Basics','File Handling','Exception Handling'],
+          hard:   ['Data Structures Overview','Sorting Algorithms','Searching Techniques','SQL Basics','Mini Database Project']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Real Number System','Exponent Rules','Scientific Notation','Algebraic Expressions','Linear Functions'],
+          medium: ['Systems of Linear Equations','Pythagorean Theorem Applications','Geometric Transformations','Volume of 3D Shapes','Bivariate Data'],
+          hard:   ['Introduction to Quadratics','Irrational Numbers','Parallel Lines and Transversals','Probability Models','Non-Linear Functions']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Cells and Cell Division','Genetics and DNA','Natural Selection','Periodic Table Trends','Chemical Equations Balancing'],
+          medium: ['Acids Bases and pH','Thermal Energy','Electromagnetic Spectrum','Newton Laws Applications','Ecosystems and Biomes'],
+          hard:   ['Mole Concept Introduction','Wave Interference','Genetic Engineering Introduction','Climate Change Science','Extended Experimental Work']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Economic Systems','Supply and Demand','Government Structures','Human Rights Framework','Globalisation Overview'],
+          medium: ['Cold War','Decolonisation','Environmental Policy','International Organisations','Migration Patterns'],
+          hard:   ['Geopolitics','Economic Inequality','Conflict Resolution','Comparative Political Systems','Research Skills and Essay Writing']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['OOP Concepts','Classes and Objects','Encapsulation','Inheritance','Polymorphism'],
+          medium: ['Data Structures - Stacks and Queues','Linked Lists','Binary Search Trees','Recursion','Algorithm Complexity'],
+          hard:   ['Sorting Algorithm Analysis','Graph Theory Basics','Dynamic Programming Introduction','Database Design','Software Development Lifecycle']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Integer Operations Review','Rational vs Irrational','Exponent Rules','Scientific Notation','Linear Equations'],
+          medium: ['Functions and Graphs','Systems of Equations','Geometry - Angles and Triangles','Pythagorean Theorem','Statistics and Probability'],
+          hard:   ['Quadratic Equations Introduction','Geometric Transformations','Volume and Surface Area','Data Analysis','Proof and Reasoning']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Genetics and Heredity','Evolution and Natural Selection','Atom Structure','Periodic Table','Chemical Reactions'],
+          medium: ['Acids and Bases','Forces and Newton Laws','Energy Conservation','Waves and Sound','Electromagnetic Spectrum'],
+          hard:   ['Stoichiometry Intro','Electric Circuits','Thermodynamics Basics','Earth Systems','Scientific Argumentation']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['American Revolution','French Revolution','Industrial Revolution','Imperialism and Colonialism','World War I'],
+          medium: ['World War II','Cold War','Civil Rights Movements','Globalisation','Contemporary Geography'],
+          hard:   ['Historical Essay Writing','Economic Systems Comparison','Political Philosophy','Current Events Analysis','Research Project']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['OOP in Python','Classes and Objects','Methods','Inheritance','Exception Handling'],
+          medium: ['File I/O','Regular Expressions','Libraries and Modules','Data Structures','Algorithms Basics'],
+          hard:   ['Web Scraping','API Usage','Database with SQLite','Unit Testing','Final Project']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 9
+  // ═══════════════════════════════════════════
+  9: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Number Systems','Polynomials - Introduction','Coordinate Geometry Basics','Introduction to Euclid Geometry','Lines and Angles'],
+          medium: ['Triangles','Quadrilaterals','Areas of Parallelograms and Triangles','Circles Introduction','Constructions'],
+          hard:   ['Herons Formula','Surface Areas and Volumes','Statistics','Probability','Linear Equations in Two Variables']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Matter in Our Surroundings','Is Matter Around Us Pure','Atoms and Molecules','Structure of the Atom','The Fundamental Unit of Life'],
+          medium: ['Tissues','Diversity in Living Organisms','Motion','Force and Laws of Motion','Gravitation'],
+          hard:   ['Work and Energy','Sound','Why Do We Fall Ill','Natural Resources','Improvement in Food Resources']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['India Size and Location','Physical Features of India','Drainage','Climate','Natural Vegetation and Wildlife'],
+          medium: ['Population','The French Revolution','Socialism in Europe and Russian Revolution','Nazism and Rise of Hitler','Forest Society and Colonialism'],
+          hard:   ['Pastoralists in the Modern World','Peasants and Farmers','History and Sport','Clothing - A Social History','What is Democracy - Why Democracy']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Introduction to Python','Variables Data Types Operators','Input and Output','String Handling','List Basics'],
+          medium: ['Control Structures - if else','Loops - for while','Functions and Recursion','Tuples Sets Dictionaries','File Handling'],
+          hard:   ['Object Oriented Python','Exception Handling','Modules and Packages','NumPy Basics','Mini Project Development']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['The Story of Village Palampur','People as Resource','Poverty as a Challenge','Food Security in India'],
+          medium: ['Understanding Economics','Sectors of Indian Economy','Money and Credit Basics','Globalisation Introduction'],
+          hard:   ['Consumer Rights','Development Goals','Economic Reforms','Data Interpretation']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Algebraic Manipulation','Linear Functions and Graphs','Geometry - Angles and Proofs','Basic Trigonometry','Descriptive Statistics'],
+          medium: ['Quadratic Functions','Systems of Equations','Circle Theorems','Trigonometric Ratios','Probability Distributions'],
+          hard:   ['Exponential Functions','Logarithms Introduction','Vectors Introduction','Calculus Readiness','Mathematical Proof']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Cell Biology Review','Molecular Biology Intro','Genetics','Ecology','Evolution'],
+          medium: ['Atomic Theory','Stoichiometry','Bonding and Structure','Energetics','Kinetics Introduction'],
+          hard:   ['Mechanics','Thermal Physics','Waves','Electricity and Magnetism','Experimental Investigation']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Causes of World War I','Treaty of Versailles','Rise of Fascism','World War II Overview','Cold War Origins'],
+          medium: ['Decolonisation in Asia and Africa','The United Nations','Human Rights','Economic Development','Environmental Challenges'],
+          hard:   ['Historical Essay Writing','Source Evaluation','Comparative History','Geopolitical Analysis','Extended Research']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['System Fundamentals','Computer Organisation','Binary and Hexadecimal','Boolean Logic','Operating Systems'],
+          medium: ['Networks and Internet','Data Representation','Programming Concepts','OOP in Java/Python','Databases Introduction'],
+          hard:   ['Algorithm Design','Recursive Algorithms','Abstract Data Types','Resource Management','System Design Project']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Scarcity and Choice','Supply and Demand','Market Structures','Measuring Economic Activity','Price Determination'],
+          medium: ['Elasticity','Consumer and Producer Surplus','Market Failure','Government Intervention','National Income Accounting'],
+          hard:   ['Macroeconomic Models','Fiscal and Monetary Policy','International Trade Theory','Development Economics','Economic Data Analysis']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Real Numbers and Properties','Algebraic Expressions','Linear Equations','Geometry Basics - Triangles','Coordinate Geometry'],
+          medium: ['Quadratic Equations','Functions and Relations','Trigonometry Introduction','Statistics','Probability'],
+          hard:   ['Polynomial Functions','Circle Theorems','Trigonometric Applications','Data Analysis and Inference','Proof Writing']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Biology - Cell Division','Genetics Basics','Chemistry - Atomic Structure','Periodic Table Trends','Physics - Motion'],
+          medium: ['Forces and Newton Laws','Chemical Bonding','Photosynthesis and Respiration','Ecosystems','Energy'],
+          hard:   ['Stoichiometry','Thermodynamics','Genetics and Evolution','Experimental Investigation','Scientific Communication']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['World Geography','History of Civilisations','Government and Democracy','Economic Systems','Cultural Studies'],
+          medium: ['20th Century History','Globalisation','Environmental Issues','Political Ideologies','International Relations'],
+          hard:   ['Historical Research Skills','Economic Analysis','Policy Evaluation','Current Affairs','Analytical Essay Writing']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Programming Concepts Review','Functions and Modules','Lists and Dictionaries','OOP Basics','Debugging'],
+          medium: ['Data Structures','Algorithm Analysis','Database Basics','Web Development Intro','APIs'],
+          hard:   ['Advanced Algorithms','Software Engineering','Machine Learning Intro','Cybersecurity','Capstone Project']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Introduction to Economics','Needs Wants and Scarcity','Supply and Demand','Market Types','Price System'],
+          medium: ['Consumer Theory','Production and Costs','GDP and Economic Indicators','Inflation and Unemployment','Government Policy'],
+          hard:   ['Macroeconomic Theory','International Trade','Financial Markets','Development Economics','Economic Research']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 10
+  // ═══════════════════════════════════════════
+  10: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Real Numbers','Polynomials','Pair of Linear Equations','Arithmetic Progressions','Triangles'],
+          medium: ['Coordinate Geometry','Introduction to Trigonometry','Some Applications of Trigonometry','Circles','Constructions'],
+          hard:   ['Areas Related to Circles','Surface Areas and Volumes','Statistics','Probability','Quadratic Equations']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Chemical Reactions and Equations','Acids Bases and Salts','Metals and Non-Metals','Life Processes','Control and Coordination'],
+          medium: ['How Do Organisms Reproduce','Heredity and Evolution','Light - Reflection and Refraction','Human Eye and Colourful World','Electricity'],
+          hard:   ['Magnetic Effects of Electric Current','Sources of Energy','Our Environment','Management of Natural Resources','Carbon and Its Compounds']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Resources and Development','Forest and Wildlife Resources','Water Resources','Agriculture','Minerals and Energy Resources'],
+          medium: ['Manufacturing Industries','Lifelines of National Economy','The Rise of Nationalism in Europe','Nationalism in India','The Making of a Global World'],
+          hard:   ['The Age of Industrialisation','Print Culture and the Modern World','Power Sharing','Federalism','Democracy and Diversity']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Python Revision','SQL Introduction','Database Concepts','Create and Insert SQL','Select Queries'],
+          medium: ['SQL - Where Clauses','Joins and Relationships','Python-MySQL Connectivity','Django Introduction','HTML and CSS Basics'],
+          hard:   ['Flask Web Framework','REST APIs','Data Visualisation with Matplotlib','Pandas Basics','Final Project']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Development','Sectors of the Indian Economy','Money and Credit','Globalisation and the Indian Economy'],
+          medium: ['Consumer Rights','Economic Planning','Poverty and Inequality','Agricultural Economy'],
+          hard:   ['Indian Economic Policy','Trade Liberalisation','GST and Taxation','Economic Data Analysis']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Number and Algebra Revision','Sequences and Series','Geometry and Trigonometry','Statistics and Probability','Functions Review'],
+          medium: ['Exponential and Log Functions','Circular Functions','Vectors','Differential Calculus Introduction','Integral Calculus Introduction'],
+          hard:   ['Complex Numbers Introduction','Matrices','Proofs','Statistical Distributions','Extended Mathematics Problems']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['IB Biology - Cell Biology','Molecular Biology','Genetics and Heredity','Ecology and Conservation','Human Physiology'],
+          medium: ['IB Chemistry - Atomic Structure','Periodicity','Bonding','Energetics','Kinetics and Equilibrium'],
+          hard:   ['IB Physics - Mechanics','Thermal Physics','Oscillations and Waves','Electricity and Magnetism','Internal Assessment Preparation']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Authoritarian States - 20th Century','Independence Movements','Cold War Developments','Causes of Conflict','Human Rights Violations'],
+          medium: ['Historical Investigation Skills','Comparative Analysis','Propaganda and Media','Economic Causes of War','Post-War Settlements'],
+          hard:   ['Internal Assessment','Source Evaluation Techniques','Counter-Arguments','Historiography','Extended Essay Preparation']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['System Fundamentals Review','Networks and Communication','Computational Thinking','OOP Advanced','Databases'],
+          medium: ['Algorithm Design and Analysis','Abstract Data Types','Resource Management','Web Science','Simulations'],
+          hard:   ['IA Project Development','Case Study Analysis','Recursive Algorithms','Parallel Systems','Evaluation and Testing']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Microeconomics - Demand and Supply','Elasticity Concepts','Market Structures','Microeconomic Policy','Externalities'],
+          medium: ['Macroeconomics - GDP','Inflation and Unemployment','Fiscal Policy','Monetary Policy','Economic Growth'],
+          hard:   ['International Economics','Exchange Rates','Balance of Payments','Development Economics','IA Preparation']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Algebra Review','Quadratic Equations','Functions','Trigonometry Basics','Geometry - Similarity and Congruence'],
+          medium: ['Statistics and Probability','Exponential Functions','Logarithms','Circles and Coordinate Geometry','Sequences'],
+          hard:   ['Calculus Introduction','Vectors','Mathematical Proof','Complex Problems','Exam Preparation']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Genetics and Evolution','Human Biology','Chemical Reactions','Atomic Theory','Forces and Motion'],
+          medium: ['Electricity and Magnetism','Wave Properties','Organic Chemistry Intro','Ecosystems','Earth Science'],
+          hard:   ['Thermodynamics','Nuclear Physics Intro','Advanced Genetics','Chemical Equilibrium','Scientific Writing']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['World History - 20th Century','Political Geography','Economic Geography','Cultural Studies','Civic Education'],
+          medium: ['International Relations','Development Issues','Environmental Policy','Comparative Government','Media Literacy'],
+          hard:   ['Historical Thesis Writing','Economic Analysis','Political Theory','Global Governance','Research Project']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Advanced Python','Data Structures','SQL Databases','HTML/CSS','JavaScript Basics'],
+          medium: ['Web Development','APIs and JSON','Data Analysis','Version Control (Git)','Testing'],
+          hard:   ['Full Stack Project','Machine Learning Intro','Cloud Computing Basics','DevOps Concepts','Capstone Project']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Micro vs Macro Economics','Supply Demand and Equilibrium','Types of Markets','Measuring the Economy','Banking System'],
+          medium: ['Business Cycles','Unemployment and Inflation','Trade Policy','Public Finance','Consumer Behaviour'],
+          hard:   ['Econometrics Basics','Game Theory Introduction','International Finance','Policy Analysis','Economic Research Paper']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 11
+  // ═══════════════════════════════════════════
+  11: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Sets','Relations and Functions','Trigonometric Functions','Principle of Mathematical Induction','Complex Numbers Basics'],
+          medium: ['Linear Inequalities','Permutations and Combinations','Binomial Theorem','Sequences and Series','Straight Lines'],
+          hard:   ['Conic Sections','Introduction to 3D Geometry','Limits and Derivatives','Mathematical Reasoning','Statistics and Probability']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Physical World and Units','Motion in a Straight Line','Motion in a Plane','Laws of Motion','Work Energy and Power'],
+          medium: ['System of Particles','Gravitation','Mechanical Properties of Solids and Fluids','Thermal Properties','Thermodynamics'],
+          hard:   ['Kinetic Theory','Oscillations','Waves','Some Basic Concepts of Chemistry','Structure of Atom']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['India - Physical Environment','Climate Vegetation and Soil','Natural Hazards','Introduction to Sociology','Social Structure'],
+          medium: ['Introducing Indian Society','Cultural Change','Social Institutions','Political Science - Constitution','Rights in Indian Constitution'],
+          hard:   ['Election and Representation','Executive and Legislature','Judiciary','Local Governments','Federalism in India']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Computer Systems Overview','Boolean Algebra','Python Advanced OOP','Recursion','Stacks and Queues'],
+          medium: ['Linked Lists','Trees','Graphs','Searching and Sorting','Time Complexity'],
+          hard:   ['Database Normalisation','SQL Advanced Queries','Django Web Framework','REST API Development','Project Planning']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Introduction to Microeconomics','Consumer Equilibrium','Production Function','Cost Concepts','Revenue Concepts'],
+          medium: ['Market Equilibrium','Elasticity of Demand and Supply','Government Intervention','Introduction to Macroeconomics','National Income'],
+          hard:   ['Money and Banking','Government Budget','Balance of Payments','Foreign Exchange','Indian Economic Development']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Number and Algebra - IB HL','Functions - Domain Range','Geometry and Trig - IB HL','Statistics - Distributions','Calculus - Differentiation'],
+          medium: ['Integration Techniques','Vectors in 3D','Complex Numbers','Matrices and Transformations','Probability - Conditional'],
+          hard:   ['Differential Equations','Mathematical Induction','Graph Theory','Further Statistics','HL Extension Topics']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Bio HL - Nucleic Acids','Metabolism','Plant Biology','Genetics and Evolution','Animal Physiology'],
+          medium: ['Chem HL - Equilibrium','Acids and Bases','Redox Chemistry','Organic Chemistry','Analytical Chemistry'],
+          hard:   ['Physics HL - Fields','Electromagnetic Induction','Quantum and Nuclear Physics','Relativity','IA and EE Preparation']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['History HL - Prescribed Subjects','World History Topics','Regional History','Source Analysis','Essay Planning'],
+          medium: ['Historiography','Comparative History','Thematic Studies','Internal Assessment','Exam Technique'],
+          hard:   ['Extended Essay','Historical Argument','Counter-Factual History','Synthesis Questions','HL Paper 3 Preparation']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['HL - Abstract Data Structures','Further OOP','Databases HL','Modelling and Simulation','Web Science HL'],
+          medium: ['HL - Resource Management','Control Systems','Robotics and AI Introduction','Case Study Depth','Algorithm Design HL'],
+          hard:   ['IA Development','Testing and Evaluation','HL Extension - Theory','Computational Thinking','Exam Preparation']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['HL Micro - Theory of Firm','Price Discrimination','Labour Markets','Market Failure HL','Government Policies'],
+          medium: ['HL Macro - Growth Models','Keynesian vs Monetarist','International Trade HL','Exchange Rate Systems','Development Indicators'],
+          hard:   ['HL Paper 3 Quantitative Skills','Policy Evaluation','IA Commentary','Extended Response','Exam Technique']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Pre-Calculus - Functions','Polynomial Functions','Rational Functions','Exponential Functions','Logarithmic Functions'],
+          medium: ['Trigonometry Advanced','Sequences and Series','Introduction to Calculus','Limits','Derivatives Basics'],
+          hard:   ['Integration Basics','Differential Equations Intro','Vectors','Statistics - Probability Distributions','Exam Preparation']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Advanced Biology - Genetics','Biotechnology','Chemistry - Organic','Thermodynamics','Electromagnetic Waves'],
+          medium: ['Nuclear Chemistry','Quantum Mechanics Intro','Molecular Genetics','Ecology Advanced','Fluid Mechanics'],
+          hard:   ['Research Methods','Data Analysis','Scientific Writing','Lab Work','Exam Preparation']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Modern World History','Political Theory','Human Geography','Economic Development','Sociological Concepts'],
+          medium: ['International Relations','Comparative Politics','Urban Studies','Conflict Studies','Research Methodology'],
+          hard:   ['Dissertation Writing','Primary Research','Policy Analysis','Academic Debate','Final Examination Prep']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Advanced Algorithms','System Design','Database Advanced','Networking','Security Fundamentals'],
+          medium: ['Machine Learning Basics','Data Science with Python','Cloud Platforms','Mobile Development','DevOps'],
+          hard:   ['AI Ethics','Distributed Systems','Compiler Design Intro','Capstone Project','Technical Interview Prep']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Microeconomic Theory','Market Structures Advanced','Welfare Economics','Macroeconomic Theory','Money and Banking'],
+          medium: ['International Trade','Economic Growth Models','Fiscal Policy','Monetary Policy','Development Economics'],
+          hard:   ['Econometrics','Game Theory','Behavioural Economics','Research Paper','Exam Strategies']
+        }
+      }
+    }
+  },
+
+  // ═══════════════════════════════════════════
+  // GRADE 12
+  // ═══════════════════════════════════════════
+  12: {
+    CBSE: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Relations and Functions','Inverse Trigonometric Functions','Matrices Basics','Determinants Basics','Continuity and Differentiability'],
+          medium: ['Application of Derivatives','Integrals','Application of Integrals','Differential Equations','Vector Algebra'],
+          hard:   ['Three Dimensional Geometry','Linear Programming','Probability Advanced','Board Exam Paper Practice','Previous Year Questions']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Electric Charges and Fields','Electrostatic Potential','Current Electricity','Moving Charges and Magnetism','Magnetism and Matter'],
+          medium: ['Electromagnetic Induction','Alternating Current','Electromagnetic Waves','Ray Optics','Wave Optics'],
+          hard:   ['Dual Nature of Radiation','Atoms and Nuclei','Semiconductor Devices','Communication Systems','Board Revision']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Population Geography','Human Settlements','Land Resources and Agriculture','Water Resources','Mineral and Energy Resources'],
+          medium: ['Planning and Sustainable Development','Transport Communication and Trade','International Trade','Cold War Era','End of Bipolarity'],
+          hard:   ['US Hegemony','Alternative Centres of Power','South Asia and Contemporary World','International Organisations','Security in Contemporary World']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Python Review and OOP','Exception Handling','File Handling Advanced','Stack Implementation','Queue Implementation'],
+          medium: ['Linked Lists in Python','Trees and Binary Trees','Sorting Algorithms','Searching Algorithms','SQL Advanced'],
+          hard:   ['Database Connectivity Python','Web Development Flask','Board Practical Preparation','Previous Year Programs','Project Development']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Macroeconomics - National Income','Money and Banking','Determination of Income','Government Budget','Balance of Payments'],
+          medium: ['Foreign Exchange','Indian Economy Since Independence','Poverty and Human Capital','Rural and Urban Development','Environment and Sustainable Development'],
+          hard:   ['Comparative Development','Current Economic Issues','Data Interpretation','Board Exam Practice','Case Study Analysis']
+        }
+      }
+    },
+    IB: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Analysis and Approaches - Revision','Applications and Interpretation - Revision','Calculus Deep Dive','Statistics Deep Dive','Vectors and Matrices'],
+          medium: ['Complex Analysis','Differential Equations','Further Probability','Graph Theory','Mathematical Modelling'],
+          hard:   ['HL Paper 3 Problem Solving','Internal Assessment Finalisation','Past Paper Practice','Exam Technique','IB Marking Criteria']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Biology HL Final Review','Option Topics','Chemistry HL Final Review','Physics HL Final Review','Experimental Skills'],
+          medium: ['Cross-Subject Connections','IA Finalisation','Data Analysis Advanced','Graph Interpretation','Mark Scheme Analysis'],
+          hard:   ['Paper 3 Short Answer','Extended Response Questions','HL Multiple Choice Strategy','Time Management in Exams','Final Mock Exams']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['History Final Paper Review','All Prescribed Topics','Regional Focus Revision','World History Review','Source Booklet Practice'],
+          medium: ['Essay Planning Under Timed Conditions','Counter Argument Development','Historiography Integration','Mark Band Criteria','Past Paper Analysis'],
+          hard:   ['HL Paper 3 - 4 Question Responses','Extended Essay Finalisation','Predicted Grade Maximisation','Examiner Tips','Final Preparation']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['IA Final Submission Prep','Case Study Deep Dive','All Topics Revision','OOP Revision','Data Structures Revision'],
+          medium: ['Algorithm Complexity Analysis','System Design Questions','Database Questions','Web Science Questions','Exam Question Types'],
+          hard:   ['Paper 1 Strategy','Paper 2 Programming Questions','HL Extension Review','Marking Criteria Understanding','Mock Exam Practice']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Microeconomics Full Revision','Macroeconomics Full Revision','International Economics Revision','Development Economics Revision','IA Portfolio Review'],
+          medium: ['4-Mark Questions','8-Mark Questions','Paper 3 Quantitative','Evaluation Skills','Case Study Practice'],
+          hard:   ['25-Mark Essay Writing','HL Extension Mastery','Examiner Reports Analysis','Final Mock Papers','Grade 7 Target Strategies']
+        }
+      }
+    },
+    General: {
+      Mathematics: {
+        color: '#8fafc7', icon: '📐',
+        topics: {
+          easy:   ['Calculus - Differentiation Review','Integration Techniques','Differential Equations','Statistics and Distributions','Vectors and Matrices'],
+          medium: ['Complex Numbers','Sequences Series and Limits','Multivariable Calculus Intro','Linear Algebra','Numerical Methods'],
+          hard:   ['Proof Techniques','Mathematical Modelling','Past Paper Practice','Exam Strategy','Final Revision']
+        }
+      },
+      Science: {
+        color: '#8db89e', icon: '🔬',
+        topics: {
+          easy:   ['Advanced Genetics','Molecular Biology','Organic Chemistry Advanced','Thermodynamics Advanced','Modern Physics'],
+          medium: ['Biochemistry','Quantum Mechanics','Electrochemistry','Astrophysics Intro','Neuroscience Basics'],
+          hard:   ['Research Skills','Lab Practicals','Scientific Literature Review','Final Exams Strategy','University Prep']
+        }
+      },
+      'Social Studies': {
+        color: '#c9b99a', icon: '🌍',
+        topics: {
+          easy:   ['Contemporary World Affairs','Political Philosophy','Advanced Economic Geography','Sociology of Education','Globalisation Effects'],
+          medium: ['Post-Colonial Theory','Climate Policy','Digital Society','Gender Studies','Research Ethics'],
+          hard:   ['Dissertation','Primary Research Project','Policy Brief Writing','Academic Presentation','Final Exams']
+        }
+      },
+      'Computer Science': {
+        color: '#b8a0c9', icon: '💻',
+        topics: {
+          easy:   ['Advanced Data Structures','System Architecture','Network Security','AI and Machine Learning','Cloud Computing'],
+          medium: ['Distributed Systems','Software Architecture','Big Data','Computer Vision Basics','Natural Language Processing Intro'],
+          hard:   ['Capstone Project','Technical Documentation','Code Review','University Portfolio','Interview Preparation']
+        }
+      },
+      Economics: {
+        color: '#c9a0a0', icon: '📊',
+        topics: {
+          easy:   ['Advanced Microeconomics','Advanced Macroeconomics','International Trade Theory','Development Economics','Financial Economics'],
+          medium: ['Econometrics','Behavioural Economics','Environmental Economics','Health Economics','Labour Economics'],
+          hard:   ['Research Paper','Economic Modelling','Policy Presentation','University Entrance Prep','Final Examinations']
+        }
+      }
+    }
+  }
+};
+
+/* Helper: get subjects for a grade + curriculum */
+function getSubjects(grade, curriculum) {
+  var g = LIBRARY[grade];
+  if (!g) return {};
+  return g[curriculum] || g['General'] || {};
+}
+
+/* Helper: get tasks for a subject at a given energy level */
+function getTopicsForEnergy(grade, curriculum, subjectName, energy) {
+  var subjects = getSubjects(grade, curriculum);
+  var sub = subjects[subjectName];
+  if (!sub) return [];
+  var map = { ehi: 'hard', eme: 'medium', elo: 'easy' };
+  return sub.topics[map[energy] || 'medium'] || [];
+}
+
+
+
+/* ══════════════════════════════════════════
+   GRADE PICKER
+══════════════════════════════════════════ */
+var GP = {
+  grade: null,
+  curriculum: null,
+  step: 1,
+
+  show: function() {
+    this.grade = null; this.curriculum = null; this.step = 1;
+    this.renderGrades();
+    this.renderCurricula();
+    g('gpStep1').style.display = '';
+    g('gpStep2').style.display = 'none';
+    g('gpStep3').style.display = 'none';
+    this.updateStepDots(1);
+    g('gradePicker').style.display = 'flex';
+  },
+
+  hide: function() {
+    g('gradePicker').style.display = 'none';
+  },
+
+  updateStepDots: function(active) {
+    var dots = ['step1dot','step2dot','step3dot'];
+    var bars = ['step1bar','step2bar'];
+    dots.forEach(function(id, i) {
+      var el = g(id);
+      if (i + 1 < active) {
+        el.style.background = 'var(--green)'; el.style.color = '#fff';
+        el.textContent = '\u2713';
+      } else if (i + 1 === active) {
+        el.style.background = 'var(--blue)'; el.style.color = '#fff';
+        el.textContent = i + 1;
+      } else {
+        el.style.background = 'var(--bdr)'; el.style.color = 'var(--mut)';
+        el.textContent = i + 1;
+      }
+    });
+    bars.forEach(function(id, i) {
+      g(id).style.width = (i + 1 < active ? '100%' : '0%');
+    });
+  },
+
+  renderGrades: function() {
+    var grid = g('gradeGrid'); grid.innerHTML = '';
+    var self = this;
+    for (var gr = 6; gr <= 12; gr++) {
+      (function(grade) {
+        var btn = document.createElement('button');
+        btn.textContent = 'Grade ' + grade;
+        btn.style.cssText = 'padding:12px 6px;border-radius:var(--rs);border:2px solid var(--bdr);background:var(--c2);font-family:"DM Sans",sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--txt);-webkit-tap-highlight-color:transparent';
+        btn.addEventListener('click', function() {
+          self.grade = grade;
+          grid.querySelectorAll('button').forEach(function(b) {
+            b.style.borderColor = 'var(--bdr)'; b.style.background = 'var(--c2)'; b.style.color = 'var(--txt)';
+          });
+          this.style.borderColor = 'var(--blue)'; this.style.background = 'var(--bl)'; this.style.color = 'var(--blue)';
+          g('gpNext1').disabled = false; g('gpNext1').style.opacity = '1';
+        });
+        grid.appendChild(btn);
+      })(gr);
+    }
+    g('gpNext1').disabled = true; g('gpNext1').style.opacity = '.5';
+  },
+
+  renderCurricula: function() {
+    var grid = g('currGrid'); grid.innerHTML = '';
+    var self = this;
+    var currs = [
+      { id:'CBSE', label:'CBSE', desc:'Central Board of Secondary Education - India' },
+      { id:'IB',   label:'IB',   desc:'International Baccalaureate - Global' },
+      { id:'General', label:'General', desc:'Universal curriculum - suits most schools' }
+    ];
+    currs.forEach(function(c) {
+      var btn = document.createElement('div');
+      btn.style.cssText = 'display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:var(--rs);border:2px solid var(--bdr);background:var(--c2);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent';
+      btn.innerHTML = '<div style="width:36px;height:36px;border-radius:10px;background:var(--bl);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--blue);flex-shrink:0">' + c.id.slice(0,2) + '</div>' +
+        '<div><div style="font-size:.85rem;font-weight:600;color:var(--txt)">' + c.label + '</div><div style="font-size:.72rem;color:var(--mut);margin-top:2px">' + c.desc + '</div></div>';
+      btn.addEventListener('click', function() {
+        self.curriculum = c.id;
+        grid.querySelectorAll('div[style]').forEach(function(b) {
+          b.style.borderColor = 'var(--bdr)'; b.style.background = 'var(--c2)';
+        });
+        this.style.borderColor = 'var(--blue)'; this.style.background = 'var(--bl)';
+        g('gpNext2').disabled = false; g('gpNext2').style.opacity = '1';
+      });
+      grid.appendChild(btn);
+    });
+    g('gpNext2').disabled = true; g('gpNext2').style.opacity = '.5';
+  },
+
+  goStep2: function() {
+    if (!this.grade) return;
+    g('gpStep1').style.display = 'none';
+    g('gpStep2').style.display = '';
+    this.updateStepDots(2);
+    this.step = 2;
+  },
+
+  goStep3: function() {
+    if (!this.curriculum) return;
+    var subjects = getSubjects(this.grade, this.curriculum);
+    var preview = g('subjectPreview'); preview.innerHTML = '';
+    var names = Object.keys(subjects);
+    if (!names.length) {
+      preview.innerHTML = '<p style="font-size:.77rem;color:var(--mut)">No subjects found for this combination.</p>';
+    } else {
+      names.forEach(function(name) {
+        var s = subjects[name];
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);background:var(--c2);border:1px solid var(--bdr)';
+        var topicCount = (s.topics.easy||[]).length + (s.topics.medium||[]).length + (s.topics.hard||[]).length;
+        row.innerHTML = '<div style="width:32px;height:32px;border-radius:8px;background:' + s.color + ';display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">' + (s.icon||'📚') + '</div>' +
+          '<div style="flex:1"><div style="font-size:.83rem;font-weight:600;color:var(--txt)">' + name + '</div>' +
+          '<div style="font-size:.69rem;color:var(--mut);margin-top:1px">' + topicCount + ' topics loaded</div></div>' +
+          '<span style="font-size:.64rem;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--green);font-weight:600">Ready</span>';
+        preview.appendChild(row);
+      });
+    }
+    g('gpStep2').style.display = 'none';
+    g('gpStep3').style.display = '';
+    this.updateStepDots(3);
+    this.step = 3;
+  },
+
+  finish: async function() {
+    if (!this.grade || !this.curriculum) return;
+    g('gpFinish').disabled = true; g('gpFinish').textContent = 'Loading your subjects...';
+
+    /* Save grade and curriculum to profile */
+    await syncProfile({ grade: this.grade, curriculum: this.curriculum });
+
+    /* Load subjects from library into Supabase */
+    var subjects = getSubjects(this.grade, this.curriculum);
+    var names = Object.keys(subjects);
+    var en = CACHE.profile ? (CACHE.profile.energy || 'eme') : 'eme';
+
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i];
+      var s = subjects[name];
+      var topics = getTopicsForEnergy(this.grade, this.curriculum, name, en);
+      var saved = await addSubjectDB({ name:name, diff:'medium', color:s.color, deadline:null, hours:1.5 });
+      /* Add first 3 topics as tasks */
+      for (var t = 0; t < Math.min(3, topics.length); t++) {
+        await addTaskDB({ name: topics[t], meta: name + ' - ' + ['90 min','60 min','45 min'][t], diff: ['hard','medium','easy'][t], done: false });
+      }
+    }
+
+    g('gpFinish').disabled = false; g('gpFinish').textContent = 'Start Studying! \u2736';
+    this.hide();
+    launch();
+  }
+};
+
+
+/* ══════════════════════════════════════════
+   PWA INSTALL PROMPT
+══════════════════════════════════════════ */
+var deferredInstallPrompt = null;
+var installBannerShown    = false;
+
+/* Catch the browser's beforeinstallprompt event */
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  /* Show our custom banner after 3 seconds if not dismissed before */
+  if (!installBannerShown && !localStorage.getItem('ss_install_dismissed')) {
+    setTimeout(showInstallBanner, 3000);
+  }
+});
+
+/* Also detect if already installed */
+window.addEventListener('appinstalled', function() {
+  hideInstallBanner();
+  deferredInstallPrompt = null;
+  localStorage.setItem('ss_install_dismissed', '1');
+});
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function showInstallBanner() {
+  if (isInStandaloneMode()) return; /* Already installed */
+  if (installBannerShown) return;
+  if (localStorage.getItem('ss_install_dismissed')) return;
+  installBannerShown = true;
+  var banner = g('installBanner');
+  banner.style.display = 'block';
+  /* iOS: show hint, hide install button */
+  if (isIOS()) {
+    g('iosInstallHint').style.display = 'block';
+    g('installBtn').style.display = 'none';
+  }
+}
+
+function hideInstallBanner() {
+  g('installBanner').style.display = 'none';
+}
+
+function initInstallBanner() {
+  g('installBtn').addEventListener('click', async function() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      var result = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      hideInstallBanner();
+      if (result.outcome === 'accepted') {
+        localStorage.setItem('ss_install_dismissed', '1');
+      }
+    } else if (isIOS()) {
+      g('iosInstallHint').style.display = 'block';
+      g('installBtn').style.display = 'none';
+    }
+  });
+
+  g('installClose').addEventListener('click', function() {
+    hideInstallBanner();
+    /* Don't permanently dismiss — show again next visit */
+  });
+
+  g('installLater').addEventListener('click', function() {
+    hideInstallBanner();
+    /* Show again next time */
+  });
+
+  /* On iOS, show install banner automatically after 4 seconds if not installed */
+  if (isIOS() && !isInStandaloneMode() && !localStorage.getItem('ss_install_dismissed')) {
+    setTimeout(showInstallBanner, 4000);
+  }
+}
+
+/* Wire grade picker events */
+function initGradePicker() {
+  g('gpNext1').addEventListener('click',  function(){ GP.goStep2(); });
+  g('gpNext2').addEventListener('click',  function(){ GP.goStep3(); });
+  g('gpBack1').addEventListener('click',  function(){ g('gpStep2').style.display='none'; g('gpStep1').style.display=''; GP.updateStepDots(1); });
+  g('gpBack2').addEventListener('click',  function(){ g('gpStep3').style.display='none'; g('gpStep2').style.display=''; GP.updateStepDots(2); });
+  g('gpFinish').addEventListener('click', function(){ GP.finish(); });
+}
+
+
 
 /* ============================================================
    SmartStudy PWA - Full Application JavaScript
@@ -984,7 +2159,14 @@ async function splashGo() {
   if (!splashEnergy) return;
   g('energySplash').classList.remove('show');
   await syncProfile({ energy: splashEnergy });
-  launch();
+  /* Only show grade picker if user has NO grade AND no subjects yet (brand new user) */
+  var hasGrade    = CACHE.profile && CACHE.profile.grade;
+  var hasSubjects = CACHE.subjects && CACHE.subjects.length > 0;
+  if (!hasGrade && !hasSubjects) {
+    GP.show();
+  } else {
+    launch();
+  }
 }
 
 /* ── LAUNCH APP ── */
@@ -1607,6 +2789,12 @@ document.addEventListener('DOMContentLoaded', async function(){
   /* Settings */
   g('savBtn').addEventListener('click', saveSettings);
 
+  /* Install Banner */
+  initInstallBanner();
+
+  /* Grade Picker */
+  initGradePicker();
+
   /* Spotify */
   SP.init();
 
@@ -1617,7 +2805,8 @@ document.addEventListener('DOMContentLoaded', async function(){
     await syncDown();
     g('siBtn').textContent = 'Sign In';
     if (CACHE.profile) {
-      showEnergySplash();
+      if (!CACHE.profile.grade) { showEnergySplash(); /* will show GP after */ }
+      else { showEnergySplash(); }
     } else {
       SB.token=null; SB.userId=null;
       showSc('SI');
@@ -1629,5 +2818,26 @@ document.addEventListener('DOMContentLoaded', async function(){
 
 })();
 </script>
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:500;width:calc(100% - 32px);max-width:420px;background:#fff;border-radius:var(--r);border:1px solid var(--bdr);box-shadow:0 8px 40px rgba(0,0,0,.14);padding:16px 18px;animation:fu .4s ease">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0">&#x2736;</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:.87rem;font-weight:600;color:var(--txt)">Install SmartStudy</div>
+      <div style="font-size:.73rem;color:var(--mut);margin-top:2px">Add to your home screen for the best experience</div>
+    </div>
+    <button id="installClose" style="background:none;border:none;cursor:pointer;color:var(--mut);font-size:1.1rem;padding:4px;flex-shrink:0;line-height:1">&#x2715;</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button id="installBtn" style="flex:1;padding:9px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--blue),#7aa0b8);color:#fff;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer">Install App</button>
+    <button id="installLater" style="padding:9px 14px;border-radius:var(--rs);border:1px solid var(--bdr);background:none;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--mut);cursor:pointer">Later</button>
+  </div>
+  <!-- iOS instructions (shown only on iOS) -->
+  <div id="iosInstallHint" style="display:none;margin-top:10px;padding:10px 12px;background:var(--bl);border-radius:var(--rs);font-size:.74rem;color:var(--blue);line-height:1.55">
+    On iPhone: tap the <strong>Share</strong> button &#x21E7; at the bottom of Safari, then tap <strong>"Add to Home Screen"</strong>
+  </div>
+</div>
+
 </body>
 </html>
